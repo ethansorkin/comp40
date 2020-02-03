@@ -1,0 +1,44 @@
+This is bomb 34 for lab comp40spring18.
+
+It is owned by the following student(s):
+ethan.sorkin@tufts.edu
+david.knopov@tufts.edu
+
+Ethan Sorkin and David Knopov
+
+Bomb #: 34
+
+Hours spent: 17
+
+We received help from multiple TAs, including Matt Asnes and Andrew Farm, as
+well as consulting Stackoverflow and other online resources to familiarize
+outrselves with gdb and assembly instructions.
+
+Phase 1 reads in an input string and compares it to a local variable holding
+a string defined by the given source code. If these strings are not equal, the
+bomb will explode.
+
+Phase 2 reads in 6 integers and puts them in an array. The numbers start at
+one, and follow the pattern: ray[i] = (i + 1) * ray[i - 1].
+
+Phase 3 involves a switch statement, whose input takes in two integers. The 
+first integer is the case number (0 - 7), and the second number is the 
+corresponding value that the program looks for at that case.
+
+Phase 4 recursively implements a fibonacci sequence. The program compares the
+calculated output to the number 987, which is the 15th fibonacci number. 
+Therefore we needed the program to recurse 15 times to reach 987, which is why
+15 was the correct input.
+
+Phase 5 takes in a 6 letter string and performs a bitwise 'and' with a 4-bit 
+mask on the ASCII value of every letter. The result of that operation 
+corresponds to an index in a global array of characters. At each iteration, the 
+letter at the calculated index is added to the word, which should eventually 
+create the word "ravens."
+
+Phase 6 takes in 6 integers which correspond to an index in a global linked
+list. The program checks that each value at that given index is greater than
+the value at the next given index, meaning that the indices we provide should
+represent the linked list sorted in descending order.
+
+

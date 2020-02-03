@@ -1,0 +1,12 @@
+# Darby Huye and Ethan Sorkin
+# callmain.ums
+# Assignemt 8: RPN calc 
+# 5/1/2018
+
+.zero r0
+.temps r6, r7
+.section init
+
+main:
+        goto waiting linking r1
+        halt

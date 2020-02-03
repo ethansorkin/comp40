@@ -1,0 +1,25 @@
+Darby Huye and Ethan Sorkin
+
+Acknowledgments: Harrison Kaiser and other Comp40 TAs
+
+Correctly implemented:
+    We correctly implemented a reverse polish notation calculator using 
+umasm. This calculator can perform all operations outlined in the spec. 
+
+Departures from recommeded calling convention:
+    We did not use a call stack. Instead, we were careful with our registers
+such that we did not need to make use of a call stack. In its place, we have
+a temporary stack that we use for printing. 
+As for our registers: we don't always use r1 for the return address. Sometimes
+    we use this register to hold temporary value or the user's input. 
+
+Implementation of print module:
+    For our print module, we have multiple cases: positive numbers, negative
+numbers and the most negative number. We are careful with our registers such
+that we did not need a seperate case for printing zero. 
+
+Approximately how many hours we spent analyzing the assignment: 5 hours
+
+Approximately how many hours we spent writing assembly code: 9 hours
+
+Approximately how many hours we spent debugging our calculator: 8 hours 

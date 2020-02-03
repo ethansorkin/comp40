@@ -1,0 +1,229 @@
+# Darby Huye and Ethan Sorkin
+# Assignemt 8: RPN calc 
+# 5/1/2018
+# calc40.ums
+#       contains calculator-related functions
+        
+
+.section rodata
+        jtable:
+                .space 256
+
+.section init
+.zero r0
+.temps r6, r7
+
+init_jtable:
+        r4 := 0         # iterator for filling jtable
+
+# initializes everything in jtable to input_error
+jtable_loop:         
+        r5 := jtable + r4
+        m[r0][r5] := input_error
+        r4 := r4 + 1
+        if(r4 >s 255) goto init_digits using r5
+        goto jtable_loop
+
+
+init_digits:
+        r4 := '0'
+
+# initializes 0-9 in jtable to 'digit' label
+digits_loop:    
+        r5 := jtable + r4
+        m[r0][r5] := digit
+        r4 := r4 + 1
+        if (r4 >s '9') goto init_table_funcs using r5
+        goto digits_loop
+
+# initializes character inputs to function labels
+init_table_funcs: 
+        m[r0][jtable + ' '] := waiting
+        m[r0][jtable + '\n'] := newline
+        m[r0][jtable + '+'] := add
+        m[r0][jtable + '-'] := sub
+        m[r0][jtable + '*'] := mult
+        m[r0][jtable + '/'] := div
+        m[r0][jtable + '|'] := or
+        m[r0][jtable + '&'] := and
+        m[r0][jtable + 'c'] := negate
+        m[r0][jtable + '~'] := comp
+        m[r0][jtable + 's'] := swap
+        m[r0][jtable + 'd'] := dup
+        m[r0][jtable + 'p'] := discard
+        m[r0][jtable + 'z'] := clear
+
+
+.section text 
+r3 := 0         # initializing stack counter    
+
+newline:
+        goto init_print_stack
+
+add:
+        if (r3 <s 2) goto stack_underflow2 using r5
+        pop r4 off stack r2            #pop y from val stack
+        pop r5 off stack r2            #pop x from val stack
+        r4 := r5 + r4
+        push r4 on stack r2
+        goto waiting
+
+sub:
+        if (r3 <s 2) goto stack_underflow2 using r5
+        pop r4 off stack r2            #pop y from val stack
+        pop r5 off stack r2            #pop x from val stack
+        r4 := r5 - r4
+        push r4 on stack r2
+        goto waiting
+
+mult:
+        if (r3 <s 2) goto stack_underflow2 using r5
+        pop r4 off stack r2            #pop y from val stack
+        pop r5 off stack r2            #pop x from val stack
+        r4 := r5 * r4
+        push r4 on stack r2
+        goto waiting
+
+div:
+        if (r3 <s 2) goto stack_underflow2 using r5
+        pop r4 off stack r2            #pop y from val stack
+        if (r4 == 0) goto divide_by_zero using r5
+        pop r5 off stack r2            #pop x from val stack
+        if (r4 <s 0) goto neg_y_helper using r3
+        if (r5 <s 0) goto neg_x_helper using r3
+        r4 := r5 / r4
+        push r4 on stack r2
+        goto waiting
+
+neg_x_helper:
+        if (r4 <s 0) goto both_neg using r3
+        r5 := -r5
+        r4 := r5 / r4
+        r4 := -r4
+        push r4 on stack r2
+        goto waiting
+
+neg_y_helper:
+        if (r5 <s 0) goto both_neg using r3
+        r4 := -r4
+        r4 := r5 / r4
+        r4 := -r4
+        push r4 on stack r2
+        goto waiting
+
+both_neg:
+        r5 := -r5
+        r4 := -r4
+        r4 := r5 / r4
+        push r4 on stack r2
+        goto waiting
+
+or:
+        if (r3 <s 2) goto stack_underflow2 using r5
+        pop r4 off stack r2
+        pop r5 off stack r2
+        r4 := r5 | r4
+        push r4 on stack r2
+        goto waiting
+
+and:
+        if (r3 <s 2) goto stack_underflow2 using r5
+        pop r4 off stack r2
+        pop r5 off stack r2
+        r4 := r5 & r4
+        push r4 on stack r2
+        goto waiting
+
+negate:
+        if (r3 <s 1) goto stack_underflow1 using r5
+        pop r4 off stack r2
+        r4 := -r4
+        push r4 on stack r2
+        goto waiting
+
+comp:
+        if (r3 <s 1) goto stack_underflow1 using r5
+        pop r4 off stack r2
+        r4 := ~r4
+        push r4 on stack r2
+        goto waiting
+
+swap:
+        if (r3 <s 2) goto stack_underflow2 using r5
+        pop r4 off stack r2            #pop y from val stack
+        pop r5 off stack r2            #pop x from val stack
+        push r4 on stack r2
+        push r5 on stack r2
+        goto waiting
+
+dup:
+        if (r3 <s 1) goto stack_underflow1 using r5
+        pop r4 off stack r2
+        push r4 on stack r2
+        push r4 on stack r2
+        goto waiting
+
+discard:
+        if (r3 <s 1) goto stack_underflow1 using r5
+        pop r4 off stack r2
+        goto waiting
+clear:
+        if (r3 == 0) goto waiting using r5
+        pop r4 off stack r2
+        r3 := r3 - 1
+        goto clear
+
+input_error:
+        output "Unknown character '"
+        output r1
+        output "'\n"
+        goto waiting
+
+stack_underflow1:
+        output "Stack underflow---expected at least 1 element\n"
+        goto waiting
+
+stack_underflow2:
+        output "Stack underflow---expected at least 2 elements\n"
+        goto waiting
+
+divide_by_zero:
+        output "Division by zero\n"
+        push r4 on stack r2
+        goto waiting
+
+waiting:
+        r3 := vstack - r2       # resetting stack counter
+        r1 := input()
+        if (r1 == -1) goto end_of_file using r5
+        r5 := jtable + r1
+        r5 := m[r0][r5]
+        goto r5
+
+entering:
+        r1 := input()
+        if (r1 == -1) goto end_of_file using r5
+        if (r1 <s '0') goto not_digit using r5  #input is char not digit
+        if (r1 >s '9') goto not_digit using r5
+
+        # if number has > 1 digit
+        r1 := r1 - '0'                  # getting number value from ascii
+        pop r4 off stack r2             # gets prev digit
+        r4 := r4 * 10
+        r4 := r4 + r1
+        push r4 on stack r2             # puts number on value stack
+        goto entering
+
+digit:
+        r4 := r1 - '0'  #r4 holds numerical value1
+        push r4 on stack r2     # puts numerical input on value stack
+        r3 := r3 + 1
+        goto entering
+
+not_digit:
+        r5 := jtable + r1
+        r5 := m[r0][r5]
+        goto r5         # goes to associated function label
+
+end_of_file:
+        halt

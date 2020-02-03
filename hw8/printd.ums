@@ -1,0 +1,85 @@
+# Darby Huye and Ethan Sorkin
+# Assignemt 8: RPN calc 
+# 5/1/2018
+# printd.ums
+#       contains funtions for printing UM words in decimal
+
+# register purposes:
+#       r0 -> always zero
+#       r6, r7 -> to hold temp values
+#       r4 temp_stack pointer
+#       r2 is the vstack pointer
+#       r5 is the number popped off stack to be printed
+
+
+.section data
+        .space 10000
+        temp_stack:
+
+.section init                         
+.zero r0
+.temps r6, r7
+
+.section text   
+
+init_print_stack:
+        r4 := temp_stack
+
+print_stack:
+        r3 := vstack - r2
+        if (r3 == 0) goto end_print
+        output ">>> "
+        pop r5 off stack r2
+        push r5 on stack r4               #puts value on temp stack
+
+check_num:
+        r1 := 2147483648
+        if (r5 == r1) goto print_most_neg using r3
+        if (r5 <s 0) goto print_neg using r3
+        if (r5 <s 10) goto print_single_dig using r3
+        if (r5 >s 9) goto print_mult_dig using r3
+        goto print_stack
+
+print_neg:
+        r1 := 'c'
+        output "-"
+        r5 := -r5
+        goto check_num
+
+print_most_neg:
+        output "-2147483648\n"
+        goto print_stack
+
+print_single_dig:
+        r5 := r5 + '0'
+        output r5
+        output "\n"
+        goto print_stack
+
+print_mult_dig:
+        r3 := r5 mod 10         #if r5=378, r3 := 8
+        push r3 on stack r4
+        r5 := r5 / 10
+        if (r5 != 0) goto print_mult_dig
+
+dig_print_loop:
+        pop r3 off stack r4
+
+        #if all digits have been printed
+        if (r3 >s 9) goto end_dig_loop using r5 
+        if (r3 <s -9) goto end_dig_loop using r5
+
+        output r3 + '0'
+        goto dig_print_loop
+
+end_dig_loop:
+        output "\n"
+        push r3 on stack r4
+        goto print_stack
+
+end_print:
+        r3 := temp_stack - r4
+        if(r3 == 0) goto waiting using r5 
+        pop r5 off stack r4
+        push r5 on stack r2
+        goto end_print
